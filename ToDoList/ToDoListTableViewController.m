@@ -7,26 +7,52 @@
 //
 
 #import "ToDoListTableViewController.h"
+#import "ToDoItem.h"
+#import "AddToDoItemViewController.h"
 
 @interface ToDoListTableViewController ()
+
+// private because it is declared in .m file
+@property NSMutableArray *toDoItems;
 
 @end
 
 @implementation ToDoListTableViewController
 
-- (IBAction)unwindToList:(UIStoryboardSegue *)segue {
+- (void)loadInitialData {
+    ToDoItem *item1 = [[ToDoItem alloc] init];
+    item1.itemName = @"Buy milk";
+    [self.toDoItems addObject:item1];
     
+    ToDoItem *item2 = [[ToDoItem alloc] init];
+    item2.itemName = @"Buy eggs";
+    [self.toDoItems addObject:item2];
+    
+    ToDoItem *item3 = [[ToDoItem alloc] init];
+    item3.itemName = @"Read a book";
+    [self.toDoItems addObject:item3];
+    
+}
+
+- (IBAction)unwindToList:(UIStoryboardSegue *)segue {
+    AddToDoItemViewController *source = [segue sourceViewController];
+    ToDoItem *item = source.toDoItem;
+    
+    if (item != nil) {
+        [self.toDoItems addObject:item];
+        [self.tableView reloadData];
+    }
     
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.toDoItems = [[NSMutableArray alloc] init];
+    [self loadInitialData];
+    
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -37,26 +63,31 @@
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-#warning Potentially incomplete method implementation.
     // Return the number of sections.
-    return 0;
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-#warning Incomplete method implementation.
     // Return the number of rows in the section.
-    return 0;
+    return [self.toDoItems count];
 }
 
-/*
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ListPrototypeCell" forIndexPath:indexPath];
+
+    ToDoItem *toDoItem = [self.toDoItems objectAtIndex:indexPath.row];
+    cell.textLabel.text = toDoItem.itemName;
     
-    // Configure the cell...
+    if (toDoItem.completed) {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    } else {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
     
     return cell;
 }
-*/
+
 
 /*
 // Override to support conditional editing of the table view.
@@ -101,5 +132,23 @@
     // Pass the selected object to the new view controller.
 }
 */
+
+#pragma mark = Table view delegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    // deselect row
+    [tableView deselectRowAtIndexPath:indexPath animated: NO];
+    
+    // search for item that was tapped
+    ToDoItem *tappedItem = [self.toDoItems objectAtIndex:indexPath.row];
+    
+    // toggle item completed
+    tappedItem.completed = !tappedItem.completed;
+    
+    // reload the row whose data was updated
+    [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone ];
+    
+    
+}
 
 @end
